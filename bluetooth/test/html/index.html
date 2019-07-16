@@ -110,6 +110,7 @@ async function connectBluetooth() {
   const puzzle = await connect();
   puzzle.addMoveListener(onMove);
   puzzles.push(puzzle);
+  console.log(puzzle);
   document.getElementById("display").appendChild(svg.element);
 }
 

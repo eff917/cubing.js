@@ -3,6 +3,7 @@
 import {BareBlockMove, BlockMove} from "../alg";
 import {KPuzzle, Puzzles} from "../kpuzzle";
 
+import { Quaternion } from "three";
 import {BluetoothConfig, BluetoothPuzzle, PuzzleState} from "./bluetooth-puzzle";
 import {debugLog} from "./debug";
 
@@ -26,6 +27,17 @@ const ganMoveToBlockMove: {[i: number]: BlockMove} = {
   0x11: BareBlockMove("B", -1),
 };
 
+let homeQuatInverse: Quaternion | null = null;
+
+let swap = (x: number, y: number, z: number) => {
+  return [-y, z, -x];
+};
+
+(window as any).setSwap = (fn: any) => {
+  swap = fn;
+  homeQuatInverse = null;
+};
+
 class PhysicalState {
 
   public static async read(characteristic: BluetoothRemoteGATTCharacteristic): Promise<PhysicalState> {
@@ -38,18 +50,41 @@ class PhysicalState {
   private quat: any;
   private constructor(private dataView: DataView, public timeStamp: number) {
 
-    const x = this.dataView.getInt16(0, true) / 16384;
-    const y = this.dataView.getInt16(2, true) / 16384;
-    const z = this.dataView.getInt16(4, true) / 16384;
-    const wSquared = 1 - x * x + y * y + z * z;
+    console.log([
+      this.dataView.getInt16(0, true),
+      this.dataView.getInt16(2, true),
+      this.dataView.getInt16(4, true),
+    ]);
+
+      // [168, 28, -12322]
+
+    let x = this.dataView.getInt16(0, true) / 16384;
+    let y = this.dataView.getInt16(2, true) / 16384;
+    let z = this.dataView.getInt16(4, true) / 16384;
+    [x, y, z] = swap(x, y, z);
+    const wSquared = 1 - (x * x + y * y + z * z);
     const w = wSquared > 0 ? Math.sqrt(wSquared) : 0;
-    console.log(x, y, z);
-    this.quat = {
-      _x: x,
-      _y: y,
-      _z: z,
-      _w: w,
-    };
+    const quat = new Quaternion(x, y, z, w);
+
+    if (!homeQuatInverse) {
+      homeQuatInverse = quat.clone().inverse();
+    }
+
+    const targetQuat = quat.clone().multiply(homeQuatInverse!.clone());
+
+    // z -> y
+    // x -> x'
+    // y -> z
+
+    ((window as any).tw.player.cube3DView.cube3D.cube.quaternion as Quaternion).copy(targetQuat);
+    (window as any).tw.player.anim.scheduler.singleFrame();
+    // console.log(x, y, z);
+    // this.quat = {
+    //   _x: x,
+    //   _y: y,
+    //   _z: z,
+    //   _w: w,
+    // };
 
     this.arr = new Uint8Array(dataView.buffer);
     if (this.arr.length !== this.arrLen) {

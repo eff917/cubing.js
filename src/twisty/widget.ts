@@ -292,7 +292,7 @@ export class Cube3DView implements CursorObserver, JumpObserver {
     const backWrapper = document.createElement("cube3d-back-wrapper");
     this.element.appendChild(backWrapper);
     setTimeout(() => {
-      this.cube3D.newVantage(backWrapper, {position: new THREE.Vector3(-1.25, -2.5, -2.5)});
+      this.cube3D.newVantage(backWrapper, {position: new THREE.Vector3(0, -2.5, -2.5)});
     }, 0);
   }
 

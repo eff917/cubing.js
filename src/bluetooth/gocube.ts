@@ -130,6 +130,7 @@ export class GoCube extends BluetoothPuzzle {
         },
       });
     } else {
+      // TODO: Factor out and improve code in orientation stabilizer/smoothener.
       const coords = bufferToString(buffer.buffer.slice(3, buffer.byteLength - 3)).split("#").map((s) => parseInt(s, 10) / 16384);
       const quat = new Quaternion(coords[0], coords[1], coords[2], coords[3]);
       this.lastRawQuat = quat.clone();
