@@ -1,4 +1,4 @@
-import { BlockMove, Example, parse, Sequence } from "../alg";
+import { BlockMove, Example, experimentalAppendBlockMove, parse, Sequence} from "../alg";
 import { KPuzzleDefinition, Puzzles } from "../kpuzzle";
 import { AnimModel } from "./anim";
 import { Cursor } from "./cursor";
@@ -44,9 +44,20 @@ export class Twisty {
     }
   }
 
+  // We append a move as normal, except we animate *just* the last move *even* if
+  // the last move was merged with a previous one.
+  public experimentalSetAlgAnimateBlockMove(alg: Sequence, move: BlockMove): void {
+    this.anim.skipToStart() ;
+    this.alg = alg;
+    this.anim.skipToEnd();
+    this.cursor.experimentalUpdateAlgAnimate(alg, move) ;
+    this.player.updateFromAnim();
+    this.anim.stepForward();
+  }
+
   public experimentalAddMove(move: BlockMove): void {
-    const newAlg = new Sequence(this.alg.nestedUnits.concat([move]));
-    this.experimentalSetAlg(newAlg, true);
+    const newAlg = experimentalAppendBlockMove(this.alg, move, true) ;
+    this.experimentalSetAlgAnimateBlockMove(newAlg, move);
   }
 
   public experimentalGetPlayer(): Player {

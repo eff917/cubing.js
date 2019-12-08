@@ -453,7 +453,7 @@ function onMouseMove(vantage: Vantage, event: MouseEvent): void {
 // TODO: Animate latest move but cancel algorithm moves.
 function addMove(move: BlockMove): void {
   const currentAlg = algparse(algoinput.value);
-  const newAlg = experimentalAppendBlockMove(currentAlg, move, false);
+  const newAlg = experimentalAppendBlockMove(currentAlg, move, true);
   // TODO: Avoid round-trip through string?
   if (!twisty || puzzleSelected) {
     setAlgo(algToString(newAlg), true);
