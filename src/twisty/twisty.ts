@@ -55,8 +55,8 @@ export class Twisty {
     this.anim.stepForward();
   }
 
-  public experimentalAddMove(move: BlockMove): void {
-    const newAlg = experimentalAppendBlockMove(this.alg, move, true) ;
+  public experimentalAddMove(move: BlockMove, coalesceMod: number = 0): void {
+    const newAlg = experimentalAppendBlockMove(this.alg, move, coalesceMod) ;
     this.experimentalSetAlgAnimateBlockMove(newAlg, move);
   }
 

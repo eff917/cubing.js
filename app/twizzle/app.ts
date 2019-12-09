@@ -58,14 +58,16 @@ function focusRight(): void {
   algoinput.selectionStart = algoinput.selectionEnd = 100000000;
 }
 
-function intersectionToMove(point: Vector3, event: MouseEvent, rightClick: boolean): BlockMove {
+function intersectionToMove(point: Vector3, event: MouseEvent, rightClick: boolean): [BlockMove, number] {
   let bestGrip: MoveFamily;
   let bestProduct: number = 0;
+  let gripmod: number = 1;
   for (const axis of stickerDat.axis) {
     const product = point.dot(new Vector3(...axis[0]));
     if (product > bestProduct) {
       bestProduct = product;
       bestGrip = axis[1];
+      gripmod = axis[2] ;
     }
   }
   let move = BareBlockMove(bestGrip);
@@ -80,10 +82,11 @@ function intersectionToMove(point: Vector3, event: MouseEvent, rightClick: boole
       move = modifiedBlockMove(move, { innerLayer: gripdepth[bestGrip], family: bestGrip.toLowerCase() }) ;
     }
   }
-  if (!rightClick) {
+  // if it's a mod-2 move, use forward moves for brevity
+  if (gripmod !== 2 && !rightClick) {
     move = modifiedBlockMove(move, { amount: -move.amount });
   }
-  return move;
+  return [move, gripmod] ;
 }
 
 function LucasSetup(pg: PuzzleGeometry, kpuzzledef: KPuzzleDefinition, newStickerDat: any, savealgo: boolean): void {
@@ -198,6 +201,16 @@ function gettextwriter(): (s: string) => void {
   throw new Error("Could not open window");
 }
 
+function getModValueForMove(move: BlockMove): number {
+  const family = move.family ;
+  for (const axis of stickerDat.axis) {
+    if (family === axis[1]) {
+       return axis[2] as number ;
+    }
+    return 1 ;
+  }
+}
+
 function dowork(cmd: string): void {
   if (cmd === "scramble") {
     scramble = 1;
@@ -213,7 +226,7 @@ function dowork(cmd: string): void {
     (async () => {
       const inputPuzzle = await (cmd === "bluetooth" ? connect : debugKeyboardConnect)();
       inputPuzzle.addMoveListener((e: MoveEvent) => {
-        addMove(e.latestMove);
+        addMove(e.latestMove, getModValueForMove(e.latestMove));
       });
     })();
     return;
@@ -423,7 +436,8 @@ function onMouseClick(vantage: Vantage, rightClick: boolean, event: MouseEvent):
   const intersects = raycaster.intersectObjects(controlTargets);
   if (intersects.length > 0) {
     event.preventDefault();
-    addMove(intersectionToMove(intersects[0].point, event, rightClick));
+    const [move, mod] = intersectionToMove(intersects[0].point, event, rightClick) ;
+    addMove(move, mod) ;
   }
 }
 
@@ -451,15 +465,15 @@ function onMouseMove(vantage: Vantage, event: MouseEvent): void {
 }
 
 // TODO: Animate latest move but cancel algorithm moves.
-function addMove(move: BlockMove): void {
+function addMove(move: BlockMove, modval: number): void {
   const currentAlg = algparse(algoinput.value);
-  const newAlg = experimentalAppendBlockMove(currentAlg, move, true);
+  const newAlg = experimentalAppendBlockMove(currentAlg, move, modval);
   // TODO: Avoid round-trip through string?
   if (!twisty || puzzleSelected) {
     setAlgo(algToString(newAlg), true);
   } else {
     lastalgo = algToString(newAlg) ;
-    twisty.experimentalAddMove(move) ;
+    twisty.experimentalAddMove(move, modval) ;
     algoinput.value = lastalgo ;
   }
 }

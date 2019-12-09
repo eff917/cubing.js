@@ -21,12 +21,22 @@ export function modifiedBlockMove(original: BlockMove, modifications: BlockMoveM
   );
 }
 
-export function experimentalAppendBlockMove(s: Sequence, newMove: BlockMove, coalesceLastMove: boolean = false): Sequence {
+// The coalesceMod works as follows.  0 means don't coalesce.
+// 1 means coalesce but don't do modulo operations (so, U101 potentially).
+// Otherwise, a positive integer gives the modulo, and we convert the
+// move to the canonical version of that move (so on the cube U3 goes to U').
+export function experimentalAppendBlockMove(s: Sequence, newMove: BlockMove, coalesceMod: number = 0): Sequence {
   const oldNestedUnits = s.nestedUnits;
   const oldLastMove = oldNestedUnits[oldNestedUnits.length - 1] as (BlockMove | null);
-  if (coalesceLastMove && oldLastMove && canCoalesce(oldLastMove, newMove)) {
+  if (coalesceMod !== 0 && oldLastMove && canCoalesce(oldLastMove, newMove)) {
     const newNestedUnits = s.nestedUnits.slice(0, oldNestedUnits.length - 1);
-    const newAmount = oldLastMove.amount + newMove.amount;
+    let newAmount = oldLastMove.amount + newMove.amount;
+    if (coalesceMod > 1) {
+      newAmount = (newAmount % coalesceMod + coalesceMod) % coalesceMod ;
+      if (newAmount * 2 > coalesceMod) {
+        newAmount -= coalesceMod ;
+      }
+    }
     if (newAmount !== 0) {
       newNestedUnits.push(modifiedBlockMove(oldLastMove, { amount: newAmount }));
     }
