@@ -207,8 +207,8 @@ function getModValueForMove(move: BlockMove): number {
     if (family === axis[1]) {
        return axis[2] as number ;
     }
-    return 1 ;
   }
+  return 1 ;
 }
 
 function dowork(cmd: string): void {
