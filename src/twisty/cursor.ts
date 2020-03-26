@@ -97,7 +97,7 @@ class AlgPartDecoration<P extends Puzzle> {
   constructor(puz: Puzzle, public moveCount: number,
               public duration: number,
               public forward: State<P>, public backward: State<P>,
-              public children: Array<AlgPartDecoration<P>> = []) {
+              public children: AlgPartDecoration<P>[] = []) {
   }
 }
 class DecoratorConstructor<P extends Puzzle> extends TraversalUp<AlgPartDecoration<P>> {
@@ -114,7 +114,7 @@ class DecoratorConstructor<P extends Puzzle> extends TraversalUp<AlgPartDecorati
     let moveCount = 0;
     let duration = 0;
     let state = this.identity;
-    const child: Array<AlgPartDecoration<P>> = [];
+    const child: AlgPartDecoration<P>[] = [];
     for (const part of sequence.nestedUnits) {
       const apd = this.traverse(part);
       moveCount += apd.moveCount;
@@ -168,7 +168,7 @@ class DecoratorConstructor<P extends Puzzle> extends TraversalUp<AlgPartDecorati
   public traverseCommentLong(commentLong: CommentLong): AlgPartDecoration<P> {
     return this.dummyLeaf;
   }
-  private mult(apd: AlgPartDecoration<P>, n: number, child: Array<AlgPartDecoration<P>>): AlgPartDecoration<P> {
+  private mult(apd: AlgPartDecoration<P>, n: number, child: AlgPartDecoration<P>[]): AlgPartDecoration<P> {
     const absn = Math.abs(n);
     const st = this.puz.multiply(apd.forward, n);
     return new AlgPartDecoration<P>(

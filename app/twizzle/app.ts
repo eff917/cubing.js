@@ -229,7 +229,7 @@ function dowork(cmd: string): void {
     }
     return;
   }
-  const options: Array<number | string | boolean> = [];
+  const options: (number | string | boolean)[] = [];
   const checkboxes = getCheckboxes(workOptions);
   if (checkboxes.allmoves) {
     options.push("allmoves", true);
@@ -303,7 +303,7 @@ function checkchange(): void {
     lastRender = newRender;
     const p = parsedesc(descarg);
     if (p) {
-      const options: Array<string | number | boolean> =
+      const options: (string | number | boolean)[] =
         ["allmoves", true, "orientcenters", true];
       if (!lastRender.corners) {
         options.push("graycorners", true);

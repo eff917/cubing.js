@@ -32,8 +32,8 @@ export interface BluetoothConfig {
 // TODO: Expose device name (and/or globally unique identifier)?
 export abstract class BluetoothPuzzle {
   public transformers: StreamTransformer[] = [];
-  protected listeners: Array<(e: MoveEvent) => void> = []; // TODO: type
-  protected orientationListeners: Array<(e: OrientationEvent) => void> = []; // TODO: type
+  protected listeners: ((e: MoveEvent) => void)[] = []; // TODO: type
+  protected orientationListeners: ((e: OrientationEvent) => void)[] = []; // TODO: type
 
   public abstract name(): string | undefined;
 
